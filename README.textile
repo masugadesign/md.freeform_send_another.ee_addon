@@ -1,0 +1,19 @@
+h1. MD Freeform Send Another
+
+Ties into hooks supplied by Solspace's Freeform module that will allow you to send an extra email after the form has been submitted.
+
+h2. Info
+
+Developed by Ryan Masuga, http://masugadesign.com
+
+EE Extension Info: http://expressionengine.com/docs/development/extensions.html
+
+h2. Changelog
+
+*Version 1.0.4 – (Jul 17, 2008)*
+
+* Cleanup
+
+Version 1.0.0
+
+* Initial release
