@@ -10,7 +10,13 @@ EE Extension Info: http://expressionengine.com/docs/development/extensions.html
 
 h2. Changelog
 
-*Version 1.0.4 – (Jul 17, 2008)*
+*Version 1.1.0 - (Sept 25, 2009)*
+
+* Updated by Erik Reagan, erikreagan.com
+* Added settings to control panel for both form field names and additional email addresses
+* Added language file for settings
+
+Version 1.0.4 – (Jul 17, 2008)
 
 * Cleanup
 

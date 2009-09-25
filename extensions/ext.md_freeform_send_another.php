@@ -6,7 +6,8 @@ Send email to a person from a custom field in your form
 INFO ---------------------------
 Developed by: Ryan Masuga, masugadesign.com
 Created:   Jul 17 2008
-Last Mod:  Jul 17 2008
+Last Mod:  Sept 25 2009 by Erik Reagan, erikreagan.com
+
 
 http://expressionengine.com/docs/development/extensions.html
 =============================================================================== */
@@ -18,9 +19,9 @@ class Md_freeform_send_another
 	
 	var $name           = 'MD Freeform Send Another';
 	var $class_name     = 'Md_freeform_send_another';
-	var $version        = '1.0.4';
-	var $description    = 'Send email to a person from a dropdown (or other custom field in your form)';
-	var $settings_exist = 'n';
+	var $version        = '1.1.0';
+	var $description    = 'Enables Freeform email notification based on input values and CP settings';
+	var $settings_exist = 'y';
 	var $docs_url       = '';
 
 // --------------------------------
@@ -45,7 +46,10 @@ class Md_freeform_send_another
 	// --------------------------------  
 	function settings()
 	{
+		global $LANG;
 		$settings = array();
+		$settings['form_fields'] = 'recipient';
+		$settings['additional_emails'] = '';
 		return $settings;
 	}
 	
@@ -57,23 +61,24 @@ class Md_freeform_send_another
 		global $DB, $PREFS;
 
 		$hooks = array(
-		  'freeform_module_insert_end'        => 'freeform_module_insert_end'
+		  'freeform_module_insert_end' => 'freeform_module_insert_end'
 		);
 		
-		foreach ($hooks as $hook => $method)
-		{
-			$sql[] = $DB->insert_string( 'exp_extensions', 
-				array('extension_id' 	=> '',
-					'class'			=> get_class($this),
-					'method'		=> $method,
-					'hook'			=> $hook,
-					'settings'	=> "",
-					'priority'	=> 10,
-					'version'		=> $this->version,
-					'enabled'		=> "y"
-				)
-			);
-		}
+      foreach ($hooks as $hook => $method)
+      {
+         $sql[] = $DB->insert_string( 'exp_extensions', 
+         array(
+            'extension_id' 	=> '',
+            'class'			=> get_class($this),
+            'method'		=> $method,
+            'hook'			=> $hook,
+            'settings'	=> "",
+            'priority'	=> 10,
+            'version'		=> $this->version,
+            'enabled'		=> "y"
+            )
+         );
+      }
 
 		// run all sql queries
 		foreach ($sql as $query)
@@ -114,48 +119,72 @@ class Md_freeform_send_another
 	// here. You have to comment out both places where unset($msg) exists.
 
 	function freeform_module_insert_end ($fields, $entry_id, $msg)
-  {
-    global $DB, $EXT, $REGX;
- 
-	// Use here whatever the fieldname is for the field in which you are storing the extra email
-	// example "salesperson"
-	// find the correct salesperson to email		
-			$query	= $DB->query("SELECT * FROM exp_freeform_entries WHERE entry_id = '".$entry_id."' LIMIT 1");
-			if ( $query->num_rows == 0 )
-			{
-				return;
-			}
-			$recipient = $query->row['salescontact'];
+	{
+     global $DB, $EXT, $REGX;
 
-	// echo '<pre>';
-	// print_r($recipient);
-	// print_r($msg);
-	// echo '</pre>';
-	// exit;
+     // Select the appropriate form entry based on the entry_id in the hook
+     $query = $DB->query("SELECT * FROM exp_freeform_entries WHERE entry_id = '".$entry_id."' LIMIT 1");
+     if ( $query->num_rows == 0 )
+     {
+        return;
+     }
+     
+     // New array for our new recipients
+     $all_recipients = array();
 
-			/**	----------------------------------------
-			/**	Send email
-			/**	----------------------------------------*/
-			
-			if ( ! class_exists('EEmail'))
-			{
-				require PATH_CORE.'core.email'.EXT;
-			}
-			
-			$email				= new EEmail;
-			$email->wordwrap	= FALSE;
-			$email->mailtype	= 'html';
-		
-				$email->initialize();
-				$email->from($msg['from_email'], $msg['from_name']);	
-				$email->to($recipient); 
-				$email->subject($msg['subject']);	
-				$email->message($REGX->entities_to_ascii($msg['msg']));		
-				$email->Send();
-			
-		 	unset($msg);
+     
+     // Grab the recipients from the form results
+     $form_fields = $this->settings['form_fields'] ? preg_split("/,|\|/" , $this->settings['form_fields'] ) : '';
+     if (is_array($form_fields)) {
+        foreach ($form_fields as $field) {
+           // Make sure there's actually a freeform field with this name and that the field value is not empty
+           if ((array_key_exists($field, $query->row) && ($query->row[$field] != ''))) {
+              $all_recipients[] = $query->row[$field];
+           }
+        }
+     }
 
-  $EXT->end_script = FALSE;
+     
+     // Grab the additional email addresses from the CP settings
+     $email_recipients = $this->settings['additional_emails'] ? preg_split("/,|\|/" , $this->settings['additional_emails'] ) : '';
+     
+     if (is_array($email_recipients)) {
+        foreach ($email_recipients as $address) {
+           $all_recipients[] = $address;
+        }
+     }
+     
+     
+     // echo '<pre>';
+     // print_r($all_recipients);
+     // print_r($msg);
+     // echo '</pre>';
+     // exit;
+     
+
+     if ( ! class_exists('EEmail'))
+     {
+        require PATH_CORE.'core.email'.EXT;
+     }
+
+     $email				= new EEmail;
+     $email->wordwrap	= FALSE;
+     $email->mailtype	= 'html';
+
+     foreach ($all_recipients as $recipient) {
+        
+        $email->initialize();
+        $email->from($msg['from_email'], $msg['from_name']);	
+        $email->to($recipient); 
+        $email->subject($msg['subject']);	
+        $email->message($REGX->entities_to_ascii($msg['msg']));		
+        $email->Send();
+        
+     }
+
+     unset($msg);
+
+     $EXT->end_script = FALSE;
 	}
 
 /* END class */
