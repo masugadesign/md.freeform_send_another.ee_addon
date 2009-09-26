@@ -49,6 +49,7 @@ class Md_freeform_send_another
 		global $LANG;
 		$settings = array();
 		$settings['form_fields'] = 'recipient';
+		$settings['domain'] = '';
 		$settings['additional_emails'] = '';
 		return $settings;
 	}
@@ -68,14 +69,14 @@ class Md_freeform_send_another
       {
          $sql[] = $DB->insert_string( 'exp_extensions', 
          array(
-            'extension_id' 	=> '',
-            'class'			=> get_class($this),
-            'method'		=> $method,
-            'hook'			=> $hook,
-            'settings'	=> "",
-            'priority'	=> 10,
-            'version'		=> $this->version,
-            'enabled'		=> "y"
+            'extension_id' => '',
+            'class'        => get_class($this),
+            'method'       => $method,
+            'hook'         => $hook,
+            'settings'     => "",
+            'priority'     => 10,
+            'version'      => $this->version,
+            'enabled'      => "y"
             )
          );
       }
@@ -135,10 +136,13 @@ class Md_freeform_send_another
      
      // Grab the recipients from the form results
      $form_fields = $this->settings['form_fields'] ? preg_split("/,|\|/" , $this->settings['form_fields'] ) : '';
-     if (is_array($form_fields)) {
-        foreach ($form_fields as $field) {
+     if (is_array($form_fields))
+     {
+        foreach ($form_fields as $field)
+        {
            // Make sure there's actually a freeform field with this name and that the field value is not empty
-           if ((array_key_exists($field, $query->row) && ($query->row[$field] != ''))) {
+           if ((array_key_exists($field, $query->row) && ($query->row[$field] != '')))
+           {
               $all_recipients[] = $query->row[$field];
            }
         }
@@ -148,11 +152,14 @@ class Md_freeform_send_another
      // Grab the additional email addresses from the CP settings
      $email_recipients = $this->settings['additional_emails'] ? preg_split("/,|\|/" , $this->settings['additional_emails'] ) : '';
      
-     if (is_array($email_recipients)) {
-        foreach ($email_recipients as $address) {
+     if (is_array($email_recipients))
+     {
+        foreach ($email_recipients as $address)
+        {
            $all_recipients[] = $address;
         }
      }
+     
      
      
      // echo '<pre>';
@@ -167,11 +174,14 @@ class Md_freeform_send_another
         require PATH_CORE.'core.email'.EXT;
      }
 
-     $email				= new EEmail;
-     $email->wordwrap	= FALSE;
-     $email->mailtype	= 'html';
+     $email           = new EEmail;
+     $email->wordwrap = FALSE;
+     $email->mailtype = 'html';
 
-     foreach ($all_recipients as $recipient) {
+     foreach ($all_recipients as $recipient)
+     {
+        
+        if ( strpos($recipient,'@') === FALSE ) $recipient .= $this->settings['domain'];
         
         $email->initialize();
         $email->from($msg['from_email'], $msg['from_name']);	
@@ -190,4 +200,4 @@ class Md_freeform_send_another
 /* END class */
 }
 /* End of file ext.md_freeform_send_another.php */
-/* Location: ./system/extensions/ext.md_freeform_send_another.php */ 
+/* Location: ./system/extensions/ext.md_freeform_send_another.php */

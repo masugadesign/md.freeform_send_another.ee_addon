@@ -14,6 +14,7 @@ h2. Changelog
 
 * Updated by Erik Reagan, erikreagan.com
 * Added settings to control panel for both form field names and additional email addresses
+* Added domain setting so input values don't have to store entire email addresses
 * Added language file for settings
 
 Version 1.0.4 – (Jul 17, 2008)

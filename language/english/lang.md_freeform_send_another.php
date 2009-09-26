@@ -13,6 +13,7 @@ $L = array(
 
 "form_fields" => "Freeform Form fields <small style='display:block; margin-top:6px; font-weight:normal'>A pipe delimited list of possible form field names which will contain additional email address for notification.</small>",
 
+"domain" => "If you leave out the domain in the input values you can enter it here and it will be appended (eg: @erikreagan.com)",
 
 "additional_emails" => "Additional Email Addresses <small style='display:block; margin-top:6px; font-weight:normal'>A pipe delimited list of additional email address to include in notification.</small>",
 
